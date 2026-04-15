@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TCM IT Asset Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">🖥️</div>
+    <div class="sidebar-logo-text">
+      <div class="sidebar-logo-title">TCM Assets</div>
+      <div class="sidebar-logo-sub">IT Infrastructure</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Navigation</div>
+    <div class="nav-item active" data-target="overview">
+      <span class="nav-icon">📊</span> Overview
+    </div>
+    <div class="nav-item" data-target="assets">
+      <span class="nav-icon">🖥️</span> Asset Inventory
+    </div>
+    <div class="nav-item" data-target="whatif">
+      <span class="nav-icon">⚖️</span> What-If Analysis
+    </div>
+    <div class="nav-item" data-target="insights">
+      <span class="nav-icon">💡</span> Insights
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    Generated from live Excel data<br>
+    TCM Group · IT Department<br>
+    <span id="report-date"></span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOP BAR
+════════════════════════════════════════════════════════════ -->
+<header id="topbar">
+  <button id="menu-toggle">☰</button>
+  <div class="topbar-title">
+    IT Asset Dashboard
+    <span id="topbar-sub">Loading…</span>
+  </div>
+  <button id="theme-toggle">
+    <span id="theme-icon">🌙</span> Toggle Theme
+  </button>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════════════════ -->
+<main id="main">
+
+  <!-- ─── PAGE: OVERVIEW ──────────────────────────────────── -->
+  <section class="page active-page" id="page-overview">
+
+    <div class="section-header">
+      <div class="section-title">Executive Overview</div>
+      <div class="section-sub">Computer health summary for directors — Thika & Nairobi offices</div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="cards-grid">
+      <div class="card card-highlight">
+        <div class="card-icon">🖥️</div>
+        <div class="card-label">Total Computers</div>
+        <div class="card-value" id="card-total">—</div>
+        <div class="card-sub">Across both offices</div>
+      </div>
+      <div class="card card-highlight">
+        <div class="card-icon">⚡</div>
+        <div class="card-label">SSD Upgrades Needed</div>
+        <div class="card-value" id="card-upgrades">—</div>
+        <div class="card-sub">Upgrade or Review status</div>
+      </div>
+      <div class="card card-highlight">
+        <div class="card-icon">🔴</div>
+        <div class="card-label">Full Replacements</div>
+        <div class="card-value" id="card-replacements">—</div>
+        <div class="card-sub">After assessment</div>
+      </div>
+      <div class="card card-savings">
+        <div class="card-icon">💰</div>
+        <div class="card-label">Estimated Savings</div>
+        <div class="card-value" id="card-savings">—</div>
+        <div class="card-sub">vs. full replacement strategy</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔧</div>
+        <div class="card-label">Upgrade Strategy Cost</div>
+        <div class="card-value" id="card-upgrade-cost" style="font-size:1.3rem">—</div>
+        <div class="card-sub">SSD upgrades + necessary replacements</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏷️</div>
+        <div class="card-label">Full Replace Cost</div>
+        <div class="card-value" id="card-replace-cost" style="font-size:1.3rem">—</div>
+        <div class="card-sub">If all non-OK units replaced</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Device Status Distribution</div>
+        <div class="chart-wrap" style="height:260px">
+          <canvas id="pie-chart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Cost Comparison: Upgrade Strategy vs Full Replacement</div>
+        <div class="chart-wrap" style="height:260px">
+          <canvas id="bar-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Whatif Preview -->
+    <div class="whatif-card">
+      <div class="whatif-header">
+        <span class="whatif-badge">What-If</span>
+        <span class="whatif-title">Scenario Comparison — Smart Upgrade vs Full Replacement</span>
+      </div>
+      <div class="scenarios-grid">
+        <div class="scenario-box scenario-a">
+          <div class="scenario-label">🔧 Scenario A — Upgrade Strategy</div>
+          <div class="scenario-cost" id="wi-scenario-a-cost">—</div>
+          <div class="scenario-detail">
+            <span id="wi-upgrade-count">—</span> SSD upgrades + necessary replacements
+          </div>
+        </div>
+        <div class="scenario-box scenario-b">
+          <div class="scenario-label">🔴 Scenario B — Full Replacement</div>
+          <div class="scenario-cost" id="wi-scenario-b-cost">—</div>
+          <div class="scenario-detail">
+            Replace every non-OK machine @ KES 40,000 avg
+          </div>
+        </div>
+        <div class="scenario-box scenario-save">
+          <div class="scenario-label">✅ You Save</div>
+          <div class="scenario-cost" id="wi-savings">—</div>
+          <div class="scenario-detail" id="wi-pct">— % cheaper</div>
+        </div>
+      </div>
+      <div class="savings-bar-wrap">
+        <div id="savings-bar-fill"></div>
+      </div>
+      <div class="savings-bar-label">Savings percentage vs full replacement budget</div>
+    </div>
+
+  </section>
+
+  <!-- ─── PAGE: ASSET INVENTORY ───────────────────────────── -->
+  <section class="page" id="page-assets">
+
+    <div class="section-header">
+      <div class="section-title">Asset Inventory</div>
+      <div class="section-sub">All computers — filterable, sortable, color-coded by urgency</div>
+    </div>
+
+    <div class="filters-bar">
+      <span class="filters-label">Filter:</span>
+
+      <select id="filter-status">
+        <option value="All">All Status</option>
+        <option value="OK">OK</option>
+        <option value="Upgrade">Upgrade</option>
+        <option value="Review">Review</option>
+        <option value="Replace">Replace</option>
+      </select>
+
+      <select id="filter-priority">
+        <option value="All">All Priority</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <select id="filter-office">
+        <option value="All">All Offices</option>
+        <option value="Thika">Thika</option>
+        <option value="Nairobi">Nairobi</option>
+      </select>
+
+      <input type="text" id="filter-search" placeholder="Search user, dept, model…" />
+
+      <button id="reset-filters">↺ Reset</button>
+      <div class="filter-count" id="filter-count"></div>
+    </div>
+
+    <div class="table-wrap table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th data-sort="user">User / Dept</th>
+            <th data-sort="office">Office</th>
+            <th data-sort="model">Model &amp; Specs</th>
+            <th data-sort="diskType">Disk</th>
+            <th data-sort="status">Status</th>
+            <th data-sort="priority">Priority</th>
+            <th>Recommended Action</th>
+            <th data-sort="cost">Cost (KES)</th>
+          </tr>
+        </thead>
+        <tbody id="asset-tbody">
+          <tr><td colspan="9" class="empty-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ─── PAGE: WHAT-IF ───────────────────────────────────── -->
+  <section class="page" id="page-whatif">
+
+    <div class="section-header">
+      <div class="section-title">What-If Analysis</div>
+      <div class="section-sub">Compare upgrade strategy vs full replacement — help directors make cost-effective decisions</div>
+    </div>
+
+    <div class="whatif-card" style="margin-bottom:20px">
+      <div class="whatif-header">
+        <span class="whatif-badge">Scenario A</span>
+        <span class="whatif-title">Smart SSD Upgrade Strategy (Recommended)</span>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-2);margin-bottom:16px;line-height:1.7">
+        Most performance complaints in this inventory stem from <strong>HDD bottlenecks</strong>, not hardware failure.
+        Windows 10 &amp; 11 perform significantly better on SSDs. Replacing the drive costs a fraction of a new machine
+        and extends computer life by 3–5 years.
+      </p>
+      <div class="scenarios-grid">
+        <div class="scenario-box scenario-a">
+          <div class="scenario-label">🔧 Upgrade Strategy Total</div>
+          <div class="scenario-cost" id="wi-scenario-a-cost">—</div>
+          <div class="scenario-detail"><span id="wi-upgrade-count">—</span> units get SSD upgrades + <span id="wi-replace-count">—</span> full replacements</div>
+        </div>
+        <div class="scenario-box scenario-b">
+          <div class="scenario-label">🔴 Full Replacement Total</div>
+          <div class="scenario-cost" id="wi-scenario-b-cost-2">—</div>
+          <div class="scenario-detail">Every non-OK machine replaced @ KES 40,000 average</div>
+        </div>
+        <div class="scenario-box scenario-save">
+          <div class="scenario-label">✅ Net Savings</div>
+          <div class="scenario-cost" id="wi-savings-2">—</div>
+          <div class="scenario-detail" id="wi-pct-2">— % budget saved</div>
+        </div>
+      </div>
+      <div class="savings-bar-wrap" style="margin-top:16px">
+        <div id="savings-bar-fill-2" style="height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:100px;width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1)"></div>
+      </div>
+      <div class="savings-bar-label" style="margin-top:6px">Savings percentage relative to full replacement budget</div>
+    </div>
+
+    <!-- Breakdown table -->
+    <div class="chart-card">
+      <div class="chart-title" style="margin-bottom:16px">Cost Breakdown by Action Type</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+        <thead>
+          <tr style="background:var(--surface-2);border-bottom:1px solid var(--border)">
+            <th style="padding:10px 14px;text-align:left;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)">Action Type</th>
+            <th style="padding:10px 14px;text-align:left;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)">Units</th>
+            <th style="padding:10px 14px;text-align:left;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)">Unit Cost</th>
+            <th style="padding:10px 14px;text-align:left;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)">Total</th>
+            <th style="padding:10px 14px;text-align:left;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)">vs Replace Cost</th>
+          </tr>
+        </thead>
+        <tbody id="breakdown-tbody"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ─── PAGE: INSIGHTS ──────────────────────────────────── -->
+  <section class="page" id="page-insights">
+
+    <div class="section-header">
+      <div class="section-title">Insights &amp; Recommendations</div>
+      <div class="section-sub">Key findings and actionable recommendations for management</div>
+    </div>
+
+    <!-- Key insight banner -->
+    <div style="background:linear-gradient(135deg,#1e3a5f,#0d2137);border-radius:var(--radius);padding:24px;margin-bottom:24px;color:white;box-shadow:var(--shadow)">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#93c5fd;margin-bottom:8px">🔑 Key Finding</div>
+      <div style="font-size:1.15rem;font-weight:600;line-height:1.5;max-width:700px">
+        Most computers experiencing slowness are <span style="color:#fcd34d">NOT broken</span> — they are running modern Windows 10/11 on old HDD storage.
+        An SSD upgrade of <span style="color:#86efac">KES 9,000–15,000</span> per machine will restore full performance and extend device life by 3–5 years.
+      </div>
+    </div>
+
+    <div class="insights-grid" id="insights-content">
+      <!-- Populated by JS -->
+    </div>
+
+  </section>
+
+</main>
+
+<script src="js/app.js"></script>
+<script>
+// Extra rendering for Whatif page and Insights
+const _origRenderWhatif = window.renderWhatif;
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Patch renderWhatif to also update duplicate elements on the whatif page
+  const origInit = window.init;
+  window.init = async function() {
+    await origInit.call(this);
+    // Set report date
+    document.getElementById("report-date").textContent =
+      new Date().toLocaleDateString("en-KE", { year:"numeric", month:"short", day:"numeric" });
+  };
+});
+
+// Extend app after load
+window.addEventListener("load", () => {
+  // Mirror whatif page values
+  const mirror = () => {
+    const a = document.getElementById("wi-scenario-a-cost");
+    const b = document.getElementById("wi-scenario-b-cost-2");
+    const s = document.getElementById("wi-savings-2");
+    const p = document.getElementById("wi-pct-2");
+    if (a && b) {
+      b.textContent = document.getElementById("wi-scenario-b-cost") ?
+        document.getElementById("wi-scenario-b-cost")?.textContent || "—" : "—";
+    }
+    if (a && document.getElementById("wi-scenario-a-cost")) {
+      const v1 = document.getElementById("wi-scenario-a-cost")?.textContent;
+      const v2 = document.getElementById("wi-savings")?.textContent;
+      const v3 = document.getElementById("wi-pct")?.textContent;
+      if (b) b.textContent = document.getElementById("wi-scenario-b-cost")?.textContent || "—";
+      if (s) s.textContent = v2 || "—";
+      if (p) p.textContent = v3 || "—";
+      const pctNum = parseInt((v3||"0").replace(/\D/g,""));
+      const bar2 = document.getElementById("savings-bar-fill-2");
+      if (bar2) setTimeout(() => { bar2.style.width = pctNum + "%"; }, 400);
+    }
+  };
+
+  const origRenderAll = window.renderAll;
+  window.renderAll = function() {
+    origRenderAll.call(this);
+    mirror();
+    renderBreakdown();
+    renderInsights();
+    updateFilterCount();
+  };
+
+  function updateFilterCount() {
+    const el = document.getElementById("filter-count");
+    if (el) el.textContent = `Showing ${window.filteredData?.length || 0} of ${window.allData?.length || 0} assets`;
+  }
+
+  function renderBreakdown() {
+    const data = window.allData || [];
+    if (!data.length) return;
+    const COSTS = { ssd256:9000, ssd512:15000, newPC:40000 };
+    const rows = [
+      {
+        label: "✅ No Action (OK / SSD already)",
+        units: data.filter(d=>d.status==="OK").length,
+        unitCost: 0,
+        color: "#22c55e"
+      },
+      {
+        label: "⚡ SSD Upgrade — High Priority",
+        units: data.filter(d=>d.status==="Upgrade").length,
+        unitCost: "9,000–15,000",
+        total: data.filter(d=>d.status==="Upgrade").reduce((s,d)=>s+d.cost,0),
+        color: "#f59e0b"
+      },
+      {
+        label: "🔍 SSD Upgrade — Review (OLD machines)",
+        units: data.filter(d=>d.status==="Review").length,
+        unitCost: "9,000–15,000",
+        total: data.filter(d=>d.status==="Review").reduce((s,d)=>s+d.cost,0),
+        color: "#6366f1"
+      },
+      {
+        label: "🔴 Full Replacement (critical / dead)",
+        units: data.filter(d=>d.status==="Replace").length,
+        unitCost: "40,000",
+        total: data.filter(d=>d.status==="Replace").reduce((s,d)=>s+d.cost,0),
+        color: "#ef4444"
+      }
+    ];
+    const tbody = document.getElementById("breakdown-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = rows.map(r => {
+      const tot = r.total !== undefined ? `KES ${r.total.toLocaleString()}` : "—";
+      const replaceCost = r.units * 40000;
+      const saved = replaceCost - (r.total||0);
+      const vs = r.total !== undefined && r.total < replaceCost
+        ? `<span style="color:#15803d;font-weight:600">Save KES ${saved.toLocaleString()}</span>`
+        : r.total === 0 ? `<span style="color:var(--text-3)">N/A</span>`
+        : `<span style="color:var(--text-3)">Same cost</span>`;
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:11px 14px"><span style="color:${r.color};margin-right:6px">●</span>${r.label}</td>
+        <td style="padding:11px 14px;font-family:'DM Mono',monospace;font-weight:600">${r.units}</td>
+        <td style="padding:11px 14px;font-family:'DM Mono',monospace">KES ${r.unitCost||0}</td>
+        <td style="padding:11px 14px;font-family:'DM Mono',monospace;font-weight:700">${tot}</td>
+        <td style="padding:11px 14px">${vs}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  function renderInsights() {
+    const data = window.allData || [];
+    if (!data.length) return;
+    const thika = data.filter(d=>d.office==="Thika");
+    const nairobi = data.filter(d=>d.office==="Nairobi");
+    const hddCount = data.filter(d=>d.diskType==="HDD").length;
+    const ssdCount = data.filter(d=>d.diskType==="SSD").length;
+    const highPriority = data.filter(d=>d.priority==="High"||d.priority==="Critical");
+    const oldHDD = data.filter(d=>d.diskType==="HDD"&&(d.condition.includes("OLD")||d.condition.includes("REPLACED")));
+
+    const container = document.getElementById("insights-content");
+    if (!container) return;
+    container.innerHTML = `
+    <div class="insight-card">
+      <h3>📍 By Office</h3>
+      ${insightRow("Thika — Total Assets", thika.length)}
+      ${insightRow("Thika — Need Upgrade/Review", thika.filter(d=>["Upgrade","Review"].includes(d.status)).length)}
+      ${insightRow("Thika — Need Replacement", thika.filter(d=>d.status==="Replace").length)}
+      ${insightRow("Nairobi — Total Assets", nairobi.length)}
+      ${insightRow("Nairobi — Need Upgrade/Review", nairobi.filter(d=>["Upgrade","Review"].includes(d.status)).length)}
+      ${insightRow("Nairobi — Need Replacement", nairobi.filter(d=>d.status==="Replace").length)}
+    </div>
+    <div class="insight-card">
+      <h3>💽 Disk Type Analysis</h3>
+      ${insightRow("HDD Machines (risk)", hddCount, "#dc2626")}
+      ${insightRow("SSD Machines (healthy)", ssdCount, "#16a34a")}
+      ${insightRow("HDD + OLD condition", oldHDD.length, "#dc2626")}
+      ${insightRow("HDD + NEW but complaining", data.filter(d=>d.diskType==="HDD"&&d.condition==="NEW"&&d.complaints==="HIGH").length, "#d97706")}
+      ${insightRow("Machines already OK", data.filter(d=>d.status==="OK").length, "#16a34a")}
+    </div>
+    <div class="insight-card">
+      <h3>🚨 High Priority Machines</h3>
+      ${highPriority.map(d => insightRow(`${d.user} (${d.office})`, d.action, d.priority==="Critical"?"#7c3aed":"#dc2626")).join("")}
+      ${!highPriority.length ? '<div style="font-size:.82rem;color:var(--text-3);padding:8px 0">No critical/high priority machines — great!</div>' : ''}
+    </div>
+    <div class="insight-card">
+      <h3>📋 Recommendations Summary</h3>
+      <div style="font-size:0.83rem;color:var(--text-2);line-height:1.8">
+        <p style="margin-bottom:10px">
+          <strong style="color:var(--text)">1. Immediate Action (High Priority):</strong><br>
+          Regina, Joan, and Margaret need SSD upgrades urgently. These machines are new/capable but HDD-bottlenecked.
+        </p>
+        <p style="margin-bottom:10px">
+          <strong style="color:var(--text)">2. Replacement Required:</strong><br>
+          Ngugi (Thika Spinning 1) and the Purchase Dept machine are almost dead — replacement should be budgeted now.
+          Caren (Nairobi) laptop also needs replacement.
+        </p>
+        <p>
+          <strong style="color:var(--text)">3. Proactive Review:</strong><br>
+          All OLD+HDD machines should be reviewed and upgraded with SSDs before they fail.
+          This proactive approach prevents emergency replacements.
+        </p>
+      </div>
+    </div>`;
+  }
+
+  function insightRow(label, value, color) {
+    return `<div class="insight-row">
+      <span class="insight-row-label">${label}</span>
+      <span class="insight-row-value" style="${color?`color:${color}`:''}">
+        ${typeof value === "number" ? value : value}
+      </span>
+    </div>`;
+  }
+});
+</script>
+</body>
+</html>
